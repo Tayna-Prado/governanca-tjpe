@@ -1,0 +1,898 @@
+<html>
+<head>
+<title>Sistema Governança TJPE</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+.container { max-width: 1200px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+.header { background: linear-gradient(135deg, #4169e1 0%, #1e40af 100%); color: white; padding: 30px; text-align: center; }
+.header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+.header p { font-size: 1.2em; opacity: 0.9; }
+.nav { display: flex; flex-wrap: wrap; gap: 15px; padding: 30px; background: #f8fafc; justify-content: center; }
+.botao { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 15px 25px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.botao:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+.botao.reuniao { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+.botao.norma { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.botao.insight { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+.botao.busca { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.botao.backup { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+.content { padding: 30px; }
+.secao { display: none; }
+.ativa { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.secao h2 { color: #1f2937; font-size: 1.8em; margin-bottom: 25px; padding-bottom: 10px; border-bottom: 3px solid #e5e7eb; }
+.form-grid { display: grid; gap: 20px; max-width: 800px; }
+.campo { margin-bottom: 20px; }
+.campo label { display: block; font-weight: 600; color: #374151; margin-bottom: 8px; }
+.campo input, .campo textarea, .campo select { width: 100%; padding: 12px 16px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
+.campo input:focus, .campo textarea:focus, .campo select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+.campo textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+.duas-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.salvar { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: all 0.3s ease; }
+.salvar:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3); }
+.limpar { background: #6b7280; color: white; border: none; padding: 15px 25px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-left: 15px; }
+.item { background: #f9fafb; border: 1px solid #e5e7eb; border-left: 4px solid #3b82f6; padding: 20px; margin: 15px 0; border-radius: 8px; position: relative; transition: all 0.3s ease; }
+.item:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); transform: translateY(-1px); }
+.item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+.item-meta { display: flex; gap: 10px; flex-wrap: wrap; }
+.badge { background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 500; }
+.badge.norma { background: #ef4444; }
+.badge.insight { background: #8b5cf6; }
+.excluir { background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.excluir:hover { background: #dc2626; }
+.contador { background: #1f2937; color: white; padding: 4px 8px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-left: 10px; }
+.busca-campo { width: 100%; padding: 15px 20px; border: 2px solid #d1d5db; border-radius: 12px; font-size: 18px; margin-bottom: 25px; }
+.busca-campo:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+.vazio { text-align: center; padding: 60px 20px; color: #6b7280; font-size: 18px; background: #f9fafb; border: 2px dashed #d1d5db; border-radius: 12px; }
+.sucesso { background: #d1fae5; color: #065f46; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #a7f3d0; }
+@media (max-width: 768px) { .nav { padding: 20px 15px; } .duas-colunas { grid-template-columns: 1fr; } .content { padding: 20px 15px; } .item-header { flex-direction: column; gap: 10px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="header">
+<h1>🏛️ Sistema de Governança TJPE</h1>
+<p>Gestão Estratégica de Dados Judiciários</p>
+</div>
+
+<div class="nav">
+<button class="botao reuniao" onclick="mostrar('reuniao')">📅 Reuniões</button>
+<button class="botao norma" onclick="mostrar('norma')">📚 Normas</button>
+<button class="botao insight" onclick="mostrar('insight')">💡 Insights</button>
+<button class="botao busca" onclick="mostrar('busca')">🔍 Buscar</button>
+<button class="botao backup" onclick="backup()">💾 Backup</button>
+</div>
+
+<div class="content">
+<div id="alerta"></div>
+
+<div id="reuniao" class="secao ativa">
+<h2>📅 Cadastrar Nova Reunião</h2>
+<div class="form-grid">
+<div class="duas-colunas">
+<div class="campo">
+<label>Data da Reunião:</label>
+<input type="date" id="data">
+</div>
+<div class="campo">
+<label>Tipo de Reunião:</label>
+<select id="tipo">
+<option value="">Selecione...</option>
+<option>Ordinária</option>
+<option>Extraordinária</option>
+<option>Técnica</option>
+<option>Estratégica</option>
+</select>
+</div>
+</div>
+<div class="campo">
+<label>Participantes:</label>
+<textarea id="participantes" placeholder="Ex: Presidente TJPE, Corregedor Geral, Juiz Auxiliar..."></textarea>
+</div>
+<div class="campo">
+<label>Pauta Principal:</label>
+<textarea id="pauta" placeholder="Temas centrais discutidos na reunião..."></textarea>
+</div>
+<div class="campo">
+<label>Decisões Tomadas:</label>
+<textarea id="decisoes" placeholder="Principais decisões e encaminhamentos definidos..."></textarea>
+</div>
+<div class="campo">
+<label>Ações Pendentes (opcional):</label>
+<textarea id="acoes" placeholder="Ações definidas, responsáveis e prazos..."></textarea>
+</div>
+<div class="campo">
+<label>Metas CNJ (opcional):</label>
+<textarea id="metasCnj" placeholder="Ex: Meta 1 - 80% dos processos de 2019..."></textarea>
+</div>
+</div>
+<button class="salvar" onclick="salvarReuniao()">💾 Salvar Reunião</button>
+<button class="limpar" onclick="limparCampos('reuniao')">🔄 Limpar</button>
+
+<h3 style="margin-top: 40px; color: #1f2937;">Reuniões Cadastradas <span class="contador" id="contReunioes">0</span></h3>
+<div id="listaReunioes"></div>
+</div>
+
+<div id="norma" class="secao">
+<h2>📚 Cadastrar Nova Norma</h2>
+<div class="form-grid">
+<div class="duas-colunas">
+<div class="campo">
+<label>Categoria:</label>
+<select id="categoriaNorma">
+<option value="">Selecione...</option>
+<option>CNJ - Conselho Nacional de Justiça</option>
+<option>TJPE - Tribunal de Justiça PE</option>
+<option>Federal - Legislação Federal</option>
+<option>STF - Supremo Tribunal Federal</option>
+<option>STJ - Superior Tribunal de Justiça</option>
+</select>
+</div>
+<div class="campo">
+<label>Número:</label>
+<input type="text" id="numeroNorma" placeholder="Ex: 123/2024">
+</div>
+</div>
+<div class="campo">
+<label>Título/Ementa:</label>
+<textarea id="tituloNorma" placeholder="Título completo ou ementa da norma..."></textarea>
+</div>
+<div class="campo">
+<label>Pontos-Chave Relevantes:</label>
+<textarea id="pontosChave" placeholder="Principais pontos que impactam a Governança de Dados..."></textarea>
+</div>
+<div class="campo">
+<label>Aplicação na Governança:</label>
+<textarea id="aplicacaoGov" placeholder="Como esta norma impacta seu trabalho na Governança..."></textarea>
+</div>
+</div>
+<button class="salvar" onclick="salvarNorma()">💾 Salvar Norma</button>
+<button class="limpar" onclick="limparCampos('norma')">🔄 Limpar</button>
+
+<h3 style="margin-top: 40px; color: #1f2937;">Normas Cadastradas <span class="contador" id="contNormas">0</span></h3>
+<div id="listaNormas"></div>
+</div>
+
+<div id="insight" class="secao">
+<h2>💡 Registrar Novo Insight</h2>
+<div class="form-grid">
+<div class="duas-colunas">
+<div class="campo">
+<label>Categoria/Tema:</label>
+<select id="categoriaInsight">
+<option value="">Selecione...</option>
+<option>Produtividade Judicial</option>
+<option>Eficiência Processual</option>
+<option>Metas CNJ</option>
+<option>Gestão Estratégica</option>
+<option>Tecnologia/PJe</option>
+<option>Proteção de Dados</option>
+</select>
+</div>
+<div class="campo">
+<label>Prioridade:</label>
+<select id="prioridadeInsight">
+<option>Média</option>
+<option>Alta</option>
+<option>Crítica</option>
+<option>Baixa</option>
+<option>Observação</option>
+</select>
+</div>
+</div>
+<div class="campo">
+<label>Insight/Observação:</label>
+<textarea id="textoInsight" placeholder="Descreva sua observação, conclusão ou insight estratégico..." style="min-height: 120px;"></textarea>
+</div>
+<div class="campo">
+<label>Contexto/Origem:</label>
+<textarea id="contextoInsight" placeholder="Em que situação este insight surgiu? (reunião, análise, conversa...)"></textarea>
+</div>
+<div class="campo">
+<label>Aplicabilidade/Como Usar:</label>
+<textarea id="aplicabilidadeInsight" placeholder="Como este insight pode ser aplicado estrategicamente?"></textarea>
+</div>
+</div>
+<button class="salvar" onclick="salvarInsight()">💾 Salvar Insight</button>
+<button class="limpar" onclick="limparCampos('insight')">🔄 Limpar</button>
+
+<h3 style="margin-top: 40px; color: #1f2937;">Insights Registrados <span class="contador" id="contInsights">0</span></h3>
+<div id="listaInsights"></div>
+</div>
+
+<div id="busca" class="secao">
+<h2>🔍 Buscar em Todo o Sistema</h2>
+<input type="text" class="busca-campo" id="campoBusca" onkeyup="buscar()" placeholder="Digite qualquer palavra para buscar em reuniões, normas e insights...">
+<div id="resultadosBusca"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+let reunioes = JSON.parse(localStorage.getItem('tjpe_reunioes') || '[]');
+let normas = JSON.parse(localStorage.getItem('tjpe_normas') || '[]');
+let insights = JSON.parse(localStorage.getItem('tjpe_insights') || '[]');
+
+function mostrar(secao) {
+    document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
+    document.getElementById(secao).classList.add('ativa');
+    
+    if (secao === 'reuniao') listarReunioes();
+    if (secao === 'norma') listarNormas();
+    if (secao === 'insight') listarInsights();
+    
+    atualizarContadores();
+}
+
+function salvarReuniao() {
+    const dados = {
+        data: document.getElementById('data').value,
+        tipo: document.getElementById('tipo').value,
+        participantes: document.getElementById('participantes').value,
+        pauta: document.getElementById('pauta').value,
+        decisoes: document.getElementById('decisoes').value,
+        acoes: document.getElementById('acoes').value,
+        metasCnj: document.getElementById('metasCnj').value,
+        id: Date.now(),
+        dataCadastro: new Date().toISOString()
+    };
+    
+    if (!dados.data || !dados.participantes || !dados.pauta || !dados.decisoes) {
+        mostrarAlerta('Preencha pelo menos: Data, Participantes, Pauta e Decisões', 'erro');
+        return;
+    }
+    
+    reunioes.push(dados);
+    localStorage.setItem('tjpe_reunioes', JSON.stringify(reunioes));
+    limparCampos('reuniao');
+    mostrarAlerta('Reunião cadastrada com sucesso!', 'sucesso');
+    listarReunioes();
+    atualizarContadores();
+}
+
+function salvarNorma() {
+    const dados = {
+        categoria: document.getElementById('categoriaNorma').value,
+        numero: document.getElementById('numeroNorma').value,
+        titulo: document.getElementById('tituloNorma').value,
+        pontosChave: document.getElementById('pontosChave').value,
+        aplicacaoGov: document.getElementById('aplicacaoGov').value,
+        id: Date.now(),
+        dataCadastro: new Date().toISOString()
+    };
+    
+    if (!dados.categoria || !dados.numero || !dados.titulo || !dados.pontosChave) {
+        mostrarAlerta('Preencha pelo menos: Categoria, Número, Título e Pontos-Chave', 'erro');
+        return;
+    }
+    
+    normas.push(dados);
+    localStorage.setItem('tjpe_normas', JSON.stringify(normas));
+    limparCampos('norma');
+    mostrarAlerta('Norma cadastrada com sucesso!', 'sucesso');
+    listarNormas();
+    atualizarContadores();
+}
+
+function salvarInsight() {
+    const dados = {
+        categoria: document.getElementById('categoriaInsight').value,
+        prioridade: document.getElementById('prioridadeInsight').value,
+        texto: document.getElementById('textoInsight').value,
+        contexto: document.getElementById('contextoInsight').value,
+        aplicabilidade: document.getElementById('aplicabilidadeInsight').value,
+        id: Date.now(),
+        dataCadastro: new Date().toISOString()
+    };
+    
+    if (!dados.categoria || !dados.texto || !dados.contexto) {
+        mostrarAlerta('Preencha pelo menos: Categoria, Insight e Contexto', 'erro');
+        return;
+    }
+    
+    insights.push(dados);
+    localStorage.setItem('tjpe_insights', JSON.stringify(insights));
+    limparCampos('insight');
+    mostrarAlerta('Insight registrado com sucesso!', 'sucesso');
+    listarInsights();
+    atualizarContadores();
+}
+
+function listarReunioes() {
+    const lista = document.getElementById('listaReunioes');
+    if (reunioes.length === 0) {
+        lista.innerHTML = '<div class="vazio">📅 Nenhuma reunião cadastrada ainda.<br><br>Clique no botão acima para cadastrar sua primeira reunião!</div>';
+        return;
+    }
+    
+    const reunioesOrdenadas = reunioes.sort((a, b) => new Date(b.data || b.dataCadastro) - new Date(a.data || a.dataCadastro));
+    
+    lista.innerHTML = reunioesOrdenadas.map(r => `
+        <div class="item">
+            <div class="item-header">
+                <div class="item-meta">
+                    <span class="badge">${formatarData(r.data)} - ${r.tipo}</span>
+                </div>
+                <button class="excluir" onclick="excluir('reuniao', ${r.id})">🗑️ Excluir</button>
+            </div>
+            <div><strong>👥 Participantes:</strong> ${r.participantes}</div>
+            <div><strong>📋 Pauta:</strong> ${r.pauta}</div>
+            <div><strong>✅ Decisões:</strong> ${r.decisoes}</div>
+            ${r.acoes ? `<div><strong>⏱️ Ações:</strong> ${r.acoes}</div>` : ''}
+            ${r.metasCnj ? `<div><strong>🎯 Metas CNJ:</strong> ${r.metasCnj}</div>` : ''}
+        </div>
+    `).join('');
+}
+
+function listarNormas() {
+    const lista = document.getElementById('listaNormas');
+    if (normas.length === 0) {
+        lista.innerHTML = '<div class="vazio">📚 Nenhuma norma cadastrada ainda.<br><br>Clique no botão acima para cadastrar sua primeira norma!</div>';
+        return;
+    }
+    
+    lista.innerHTML = normas.map(n => `
+        <div class="item">
+            <div class="item-header">
+                <div class="item-meta">
+                    <span class="badge norma">${n.categoria} - ${n.numero}</span>
+                </div>
+                <button class="excluir" onclick="excluir('norma', ${n.id})">🗑️ Excluir</button>
+            </div>
+            <div><strong>📋 Título:</strong> ${n.titulo}</div>
+            <div><strong>🔑 Pontos-Chave:</strong> ${n.pontosChave}</div>
+            ${n.aplicacaoGov ? `<div><strong>⚖️ Aplicação:</strong> ${n.aplicacaoGov}</div>` : ''}
+        </div>
+    `).join('');
+}
+
+function listarInsights() {
+    const lista = document.getElementById('listaInsights');
+    if (insights.length === 0) {
+        lista.innerHTML = '<div class="vazio">💡 Nenhum insight registrado ainda.<br><br>Clique no botão acima para registrar seu primeiro insight!</div>';
+        return;
+    }
+    
+    lista.innerHTML = insights.map(i => `
+        <div class="item">
+            <div class="item-header">
+                <div class="item-meta">
+                    <span class="badge insight">${i.categoria} - ${i.prioridade}</span>
+                </div>
+                <button class="excluir" onclick="excluir('insight', ${i.id})">🗑️ Excluir</button>
+            </div>
+            <div><strong>💡 Insight:</strong> ${i.texto}</div>
+            <div><strong>📝 Contexto:</strong> ${i.contexto}</div>
+            ${i.aplicabilidade ? `<div><strong>⚡ Aplicabilidade:</strong> ${i.aplicabilidade}</div>` : ''}
+        </div>
+    `).join('');
+}
+
+function excluir(tipo, id) {
+    if (confirm(`Tem certeza que deseja excluir este ${tipo}?`)) {
+        if (tipo === 'reuniao') {
+            reunioes = reunioes.filter(r => r.id !== id);
+            localStorage.setItem('tjpe_reunioes', JSON.stringify(reunioes));
+            listarReunioes();
+        } else if (tipo === 'norma') {
+            normas = normas.filter(n => n.id !== id);
+            localStorage.setItem('tjpe_normas', JSON.stringify(normas));
+            listarNormas();
+        } else if (tipo === 'insight') {
+            insights = insights.filter(i => i.id !== id);
+            localStorage.setItem('tjpe_insights', JSON.stringify(insights));
+            listarInsights();
+        }
+        atualizarContadores();
+        mostrarAlerta(`${tipo.charAt(0).toUpperCase() + tipo.slice(1)} excluído com sucesso!`, 'sucesso');
+    }
+}
+
+function buscar() {
+    const termo = document.getElementById('campoBusca').value.toLowerCase().trim();
+    const resultados = document.getElementById('resultadosBusca');
+    
+    if (!termo) {
+        resultados.innerHTML = '';
+        return;
+    }
+    
+    let encontrados = [];
+    
+    reunioes.forEach(r => {
+        if (contem(r.pauta, termo) || contem(r.participantes, termo) || contem(r.decisoes, termo)) {
+            encontrados.push(`
+                <div class="item">
+                    <div class="item-header">
+                        <span class="badge">📅 REUNIÃO - ${formatarData(r.data)}</span>
+                    </div>
+                    <div><strong>Pauta:</strong> ${destacar(r.pauta, termo)}</div>
+                    <div><strong>Decisões:</strong> ${destacar(r.decisoes, termo)}</div>
+                </div>
+            `);
+        }
+    });
+    
+    normas.forEach(n => {
+        if (contem(n.titulo, termo) || contem(n.pontosChave, termo) || contem(n.aplicacaoGov, termo)) {
+            encontrados.push(`
+                <div class="item">
+                    <div class="item-header">
+                        <span class="badge norma">📚 NORMA - ${n.categoria} ${n.numero}</span>
+                    </div>
+                    <div><strong>Título:</strong> ${destacar(n.titulo, termo)}</div>
+                    <div><strong>Pontos-Chave:</strong> ${destacar(n.pontosChave, termo)}</div>
+                </div>
+            `);
+        }
+    });
+    
+    insights.forEach(i => {
+        if (contem(i.texto, termo) || contem(i.contexto, termo) || contem(i.aplicabilidade, termo)) {
+            encontrados.push(`
+                <div class="item">
+                    <div class="item-header">
+                        <span class="badge insight">💡 INSIGHT - ${i.categoria}</span>
+                    </div>
+                    <div><strong>Insight:</strong> ${destacar(i.texto, termo)}</div>
+                    <div><strong>Contexto:</strong> ${destacar(i.contexto, termo)}</div>
+                </div>
+            `);
+        }
+    });
+    
+    if (encontrados.length === 0) {
+        resultados.innerHTML = `<div class="vazio">🔍 Nenhum resultado encontrado para "<strong>${termo}</strong>"<br><br>Tente usar palavras diferentes ou termos mais simples.</div>`;
+    } else {
+        resultados.innerHTML = `<div style="margin-bottom: 20px; color: #1f2937;"><strong>🔍 Encontrados ${encontrados.length} resultado(s) para "${termo}":</strong></div>` + encontrados.join('');
+    }
+}
+
+function backup() {
+    const dados = {
+        reunioes: reunioes,
+        normas: normas,
+        insights: insights,
+        dataBackup: new Date().toLocaleString('pt-BR'),
+        versao: '1.0.0',
+        sistema: 'Governança TJPE'
+    };
+    
+    const texto = JSON.stringify(dados, null, 2);
+    const blob = new Blob([texto], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `backup_governanca_tjpe_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    mostrarAlerta(`Backup realizado com sucesso! Total: ${reunioes.length} reuniões, ${normas.length} normas, ${insights.length} insights`, 'sucesso');
+}
+
+function limparCampos(secao) {
+    if (secao === 'reuniao') {
+        document.getElementById('data').value = '';
+        document.getElementById('tipo').value = '';
+        document.getElementById('participantes').value = '';
+        document.getElementById('pauta').value = '';
+        document.getElementById('decisoes').value = '';
+        document.getElementById('acoes').value = '';
+        document.getElementById('metasCnj').value = '';
+    } else if (secao === 'norma') {
+        document.getElementById('categoriaNorma').value = '';
+        document.getElementById('tituloNorma').value = '';
+        document.getElementById('pontosChave').value = '';
+        document.getElementById('aplicacaoGov').value = '';
+    } else if (secao === 'insight') {
+        document.getElementById('categoriaInsight').value = '';
+        document.getElementById('prioridadeInsight').value = 'Média';
+        document.getElementById('textoInsight').value = '';
+        document.getElementById('contextoInsight').value = '';
+        document.getElementById('aplicabilidadeInsight').value = '';
+    }
+}
+
+function mostrarAlerta(mensagem, tipo) {
+    const alerta = document.getElementById('alerta');
+    const classe = tipo === 'sucesso' ? 'sucesso' : 'erro';
+    alerta.innerHTML = `<div class="${classe}">${mensagem} <button onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 18px; cursor: pointer;">×</button></div>`;
+    setTimeout(() => alerta.innerHTML = '', 5000);
+}
+
+function atualizarContadores() {
+    document.getElementById('contReunioes').textContent = reunioes.length;
+    document.getElementById('contNormas').textContent = normas.length;
+    document.getElementById('contInsights').textContent = insights.length;
+}
+
+function formatarData(data) {
+    if (!data) return '';
+    try {
+        return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+    } catch (e) {
+        return data;
+    }
+}
+
+function contem(texto, termo) {
+    return texto && texto.toLowerCase().includes(termo);
+}
+
+function destacar(texto, termo) {
+    if (!texto) return '';
+    const regex = new RegExp(`(${termo})`, 'gi');
+    return texto.replace(regex, '<mark style="background: #fef08a; padding: 2px 4px; border-radius: 3px; font-weight: 600;">$1</mark>');
+}
+
+// Estilo para alertas de erro
+const style = document.createElement('style');
+style.textContent = '.erro { background: #fee2e2; color: #991b1b; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fca5a5; }';
+document.head.appendChild(style);
+
+// Inicializar
+atualizarContadores();
+listarReunioes();
+console.log('Sistema de Governança TJPE carregado com sucesso!');
+</script>
+
+</body>
+</html><html>
+<head>
+<title>Sistema Governança TJPE</title>
+<style>
+body { font-family: Arial; margin: 20px; background: #f0f8ff; }
+.header { background: #4169e1; color: white; padding: 20px; text-align: center; border-radius: 10px; }
+.botao { background: #32cd32; color: white; border: none; padding: 15px 30px; margin: 10px; border-radius: 5px; font-size: 16px; cursor: pointer; }
+.botao:hover { background: #228b22; }
+.secao { display: none; margin: 20px 0; padding: 20px; background: white; border-radius: 10px; }
+.ativa { display: block; }
+.campo { margin: 10px 0; }
+.campo label { display: block; font-weight: bold; }
+.campo input, .campo textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+.campo textarea { height: 80px; }
+.salvar { background: #ff6347; color: white; border: none; padding: 15px 30px; border-radius: 5px; font-size: 16px; cursor: pointer; }
+.item { background: #f9f9f9; padding: 15px; margin: 10px 0; border-left: 5px solid #4169e1; border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>🏛️ Sistema Governança TJPE</h1>
+<p>Versão Simplificada</p>
+</div>
+
+<div>
+<button class="botao" onclick="mostrar('reuniao')">📅 Reuniões</button>
+<button class="botao" onclick="mostrar('norma')">📚 Normas</button>
+<button class="botao" onclick="mostrar('insight')">💡 Insights</button>
+<button class="botao" onclick="mostrar('busca')">🔍 Buscar</button>
+<button class="botao" onclick="backup()">💾 Backup</button>
+</div>
+
+<div id="reuniao" class="secao ativa">
+<h2>📅 Cadastrar Reunião</h2>
+<div class="campo">
+<label>Data:</label>
+<input type="date" id="data">
+</div>
+<div class="campo">
+<label>Tipo:</label>
+<select id="tipo" style="width: 100%; padding: 10px;">
+<option>Ordinária</option>
+<option>Extraordinária</option>
+<option>Técnica</option>
+</select>
+</div>
+<div class="campo">
+<label>Participantes:</label>
+<textarea id="participantes"></textarea>
+</div>
+<div class="campo">
+<label>Pauta:</label>
+<textarea id="pauta"></textarea>
+</div>
+<div class="campo">
+<label>Decisões:</label>
+<textarea id="decisoes"></textarea>
+</div>
+<button class="salvar" onclick="salvarReuniao()">💾 Salvar Reunião</button>
+
+<h3>Reuniões Cadastradas:</h3>
+<div id="listaReunioes"></div>
+</div>
+
+<div id="norma" class="secao">
+<h2>📚 Cadastrar Norma</h2>
+<div class="campo">
+<label>Categoria:</label>
+<select id="categoriaNorma" style="width: 100%; padding: 10px;">
+<option>CNJ</option>
+<option>TJPE</option>
+<option>Federal</option>
+</select>
+</div>
+<div class="campo">
+<label>Número:</label>
+<input type="text" id="numeroNorma">
+</div>
+<div class="campo">
+<label>Título:</label>
+<textarea id="tituloNorma"></textarea>
+</div>
+<div class="campo">
+<label>Pontos-Chave:</label>
+<textarea id="pontosChave"></textarea>
+</div>
+<button class="salvar" onclick="salvarNorma()">💾 Salvar Norma</button>
+
+<h3>Normas Cadastradas:</h3>
+<div id="listaNormas"></div>
+</div>
+
+<div id="insight" class="secao">
+<h2>💡 Registrar Insight</h2>
+<div class="campo">
+<label>Categoria:</label>
+<select id="categoriaInsight" style="width: 100%; padding: 10px;">
+<option>Produtividade</option>
+<option>Gestão</option>
+<option>Tecnologia</option>
+</select>
+</div>
+<div class="campo">
+<label>Insight:</label>
+<textarea id="textoInsight"></textarea>
+</div>
+<div class="campo">
+<label>Contexto:</label>
+<textarea id="contextoInsight"></textarea>
+</div>
+<button class="salvar" onclick="salvarInsight()">💾 Salvar Insight</button>
+
+<h3>Insights Registrados:</h3>
+<div id="listaInsights"></div>
+</div>
+
+<div id="busca" class="secao">
+<h2>🔍 Buscar</h2>
+<div class="campo">
+<label>Digite para buscar:</label>
+<input type="text" id="campoBusca" onkeyup="buscar()" placeholder="Digite qualquer palavra...">
+</div>
+<div id="resultadosBusca"></div>
+</div>
+
+<script>
+let reunioes = JSON.parse(localStorage.getItem('reunioes') || '[]');
+let normas = JSON.parse(localStorage.getItem('normas') || '[]');
+let insights = JSON.parse(localStorage.getItem('insights') || '[]');
+
+function mostrar(secao) {
+    document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
+    document.getElementById(secao).classList.add('ativa');
+    
+    if (secao === 'reuniao') listarReunioes();
+    if (secao === 'norma') listarNormas();
+    if (secao === 'insight') listarInsights();
+}
+
+function salvarReuniao() {
+    const nova = {
+        data: document.getElementById('data').value,
+        tipo: document.getElementById('tipo').value,
+        participantes: document.getElementById('participantes').value,
+        pauta: document.getElementById('pauta').value,
+        decisoes: document.getElementById('decisoes').value,
+        id: Date.now()
+    };
+    
+    if (!nova.data || !nova.participantes) {
+        alert('Preencha pelo menos a data e os participantes!');
+        return;
+    }
+    
+    reunioes.push(nova);
+    localStorage.setItem('reunioes', JSON.stringify(reunioes));
+    
+    // Limpar campos
+    document.getElementById('data').value = '';
+    document.getElementById('participantes').value = '';
+    document.getElementById('pauta').value = '';
+    document.getElementById('decisoes').value = '';
+    
+    alert('Reunião salva com sucesso!');
+    listarReunioes();
+}
+
+function salvarNorma() {
+    const nova = {
+        categoria: document.getElementById('categoriaNorma').value,
+        numero: document.getElementById('numeroNorma').value,
+        titulo: document.getElementById('tituloNorma').value,
+        pontosChave: document.getElementById('pontosChave').value,
+        id: Date.now()
+    };
+    
+    if (!nova.numero || !nova.titulo) {
+        alert('Preencha pelo menos o número e o título!');
+        return;
+    }
+    
+    normas.push(nova);
+    localStorage.setItem('normas', JSON.stringify(normas));
+    
+    // Limpar campos
+    document.getElementById('numeroNorma').value = '';
+    document.getElementById('tituloNorma').value = '';
+    document.getElementById('pontosChave').value = '';
+    
+    alert('Norma salva com sucesso!');
+    listarNormas();
+}
+
+function salvarInsight() {
+    const novo = {
+        categoria: document.getElementById('categoriaInsight').value,
+        texto: document.getElementById('textoInsight').value,
+        contexto: document.getElementById('contextoInsight').value,
+        id: Date.now()
+    };
+    
+    if (!novo.texto) {
+        alert('Preencha o insight!');
+        return;
+    }
+    
+    insights.push(novo);
+    localStorage.setItem('insights', JSON.stringify(insights));
+    
+    // Limpar campos
+    document.getElementById('textoInsight').value = '';
+    document.getElementById('contextoInsight').value = '';
+    
+    alert('Insight salvo com sucesso!');
+    listarInsights();
+}
+
+function listarReunioes() {
+    const lista = document.getElementById('listaReunioes');
+    if (reunioes.length === 0) {
+        lista.innerHTML = '<p>Nenhuma reunião cadastrada ainda.</p>';
+        return;
+    }
+    
+    lista.innerHTML = reunioes.map(r => `
+        <div class="item">
+            <strong>📅 ${r.data} - ${r.tipo}</strong><br>
+            <strong>Participantes:</strong> ${r.participantes}<br>
+            <strong>Pauta:</strong> ${r.pauta}<br>
+            <strong>Decisões:</strong> ${r.decisoes}
+            <button onclick="excluir('reuniao', ${r.id})" style="float: right; background: red; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">🗑️</button>
+        </div>
+    `).join('');
+}
+
+function listarNormas() {
+    const lista = document.getElementById('listaNormas');
+    if (normas.length === 0) {
+        lista.innerHTML = '<p>Nenhuma norma cadastrada ainda.</p>';
+        return;
+    }
+    
+    lista.innerHTML = normas.map(n => `
+        <div class="item">
+            <strong>📚 ${n.categoria} - ${n.numero}</strong><br>
+            <strong>Título:</strong> ${n.titulo}<br>
+            <strong>Pontos-Chave:</strong> ${n.pontosChave}
+            <button onclick="excluir('norma', ${n.id})" style="float: right; background: red; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">🗑️</button>
+        </div>
+    `).join('');
+}
+
+function listarInsights() {
+    const lista = document.getElementById('listaInsights');
+    if (insights.length === 0) {
+        lista.innerHTML = '<p>Nenhum insight registrado ainda.</p>';
+        return;
+    }
+    
+    lista.innerHTML = insights.map(i => `
+        <div class="item">
+            <strong>💡 ${i.categoria}</strong><br>
+            <strong>Insight:</strong> ${i.texto}<br>
+            <strong>Contexto:</strong> ${i.contexto}
+            <button onclick="excluir('insight', ${i.id})" style="float: right; background: red; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">🗑️</button>
+        </div>
+    `).join('');
+}
+
+function excluir(tipo, id) {
+    if (confirm(`Tem certeza que deseja excluir este ${tipo}?`)) {
+        if (tipo === 'reuniao') {
+            reunioes = reunioes.filter(r => r.id !== id);
+            localStorage.setItem('reunioes', JSON.stringify(reunioes));
+            listarReunioes();
+        }
+        if (tipo === 'norma') {
+            normas = normas.filter(n => n.id !== id);
+            localStorage.setItem('normas', JSON.stringify(normas));
+            listarNormas();
+        }
+        if (tipo === 'insight') {
+            insights = insights.filter(i => i.id !== id);
+            localStorage.setItem('insights', JSON.stringify(insights));
+            listarInsights();
+        }
+        alert(`${tipo} excluído!`);
+    }
+}
+
+function buscar() {
+    const termo = document.getElementById('campoBusca').value.toLowerCase();
+    const resultados = document.getElementById('resultadosBusca');
+    
+    if (!termo) {
+        resultados.innerHTML = '';
+        return;
+    }
+    
+    let encontrados = [];
+    
+    reunioes.forEach(r => {
+        if (r.pauta.toLowerCase().includes(termo) || r.participantes.toLowerCase().includes(termo)) {
+            encontrados.push(`<div class="item"><strong>📅 Reunião:</strong> ${r.pauta}</div>`);
+        }
+    });
+    
+    normas.forEach(n => {
+        if (n.titulo.toLowerCase().includes(termo) || n.pontosChave.toLowerCase().includes(termo)) {
+            encontrados.push(`<div class="item"><strong>📚 Norma:</strong> ${n.titulo}</div>`);
+        }
+    });
+    
+    insights.forEach(i => {
+        if (i.texto.toLowerCase().includes(termo) || i.contexto.toLowerCase().includes(termo)) {
+            encontrados.push(`<div class="item"><strong>💡 Insight:</strong> ${i.texto}</div>`);
+        }
+    });
+    
+    resultados.innerHTML = encontrados.length ? encontrados.join('') : '<p>Nada encontrado.</p>';
+}
+
+function backup() {
+    const dados = {
+        reunioes: reunioes,
+        normas: normas,
+        insights: insights,
+        dataBackup: new Date().toLocaleString()
+    };
+    
+    const texto = JSON.stringify(dados, null, 2);
+    const blob = new Blob([texto], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'backup_governanca.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert('Backup baixado com sucesso!');
+}
+
+// Inicializar
+listarReunioes();
+</script>
+
+</body>
+</html>
